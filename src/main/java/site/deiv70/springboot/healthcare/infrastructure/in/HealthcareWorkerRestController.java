@@ -15,8 +15,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
-
 import site.deiv70.springboot.healthcare.domain.model.HealthcareWorker;
+import site.deiv70.springboot.healthcare.domain.port.HealthcareWorkerRepositoryPort;
 import site.deiv70.springboot.healthcare.domain.service.HealthcareWorkerService;
 import site.deiv70.springboot.healthcare.infrastructure.in.mapper.HealthcareWorkerInMapper;
 import site.deiv70.springboot.healthcare.infrastructure.in.model.HealthcareWorkerDtoModel;
@@ -28,6 +28,7 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 
 	final HealthcareWorkerInMapper healthcareWorkerInMapper;
 	final HealthcareWorkerService healthcareWorkerService;
+	final HealthcareWorkerRepositoryPort healthcareWorkerRepositoryPort;
 
 	@RequestMapping(value = "/healthcare-worker", method = RequestMethod.GET )
 	public ResponseEntity<Page<HealthcareWorkerDtoModel>> getHealthcareWorkers(
@@ -56,7 +57,12 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 		@RequestBody
 		HealthcareWorkerDtoModel healthcareWorkerDtoModel
 	) {
-		healthcareWorkerDtoModel.setId(UUID.randomUUID());
+		if (null == healthcareWorkerDtoModel.getId()) {
+			healthcareWorkerDtoModel.setId(UUID.randomUUID());
+		}
+		if (healthcareWorkerRepositoryPort.findById(healthcareWorkerDtoModel.getId()).isPresent()) {
+			throw new ApiErrorException("HealthcareWorker id in body must be a new UUID or NULL");
+		}
 		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(healthcareWorkerDtoModel);
 		HealthcareWorker domainResponse = healthcareWorkerService.store(domainRequest);
 		HealthcareWorkerDtoModel dtoResponse = healthcareWorkerInMapper.toInfrastructure(domainResponse);
@@ -71,7 +77,12 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 		@RequestBody
 		HealthcareWorkerDtoModel healthcareWorkerDtoModel
 	) {
-		healthcareWorkerDtoModel.setId(id);
+		if (null == healthcareWorkerDtoModel.getId()) {
+			healthcareWorkerDtoModel.setId(id);
+		}
+		if (!id.equals(healthcareWorkerDtoModel.getId())) {
+			throw new ApiErrorException("HealthcareWorker id in body must be the same as in path or NULL");
+		}
 		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(healthcareWorkerDtoModel);
 		HealthcareWorker domainResponse = healthcareWorkerService.store(domainRequest);
 		HealthcareWorkerDtoModel dtoResponse = healthcareWorkerInMapper.toInfrastructure(domainResponse);
@@ -86,7 +97,22 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 		@RequestBody
 		Map<String, Object> patchBody
 	) {
-		patchBody.put("id", id);
+		patchBody.putIfAbsent("id", id);
+		if (!id.equals(patchBody.get("id"))) {
+			throw new ApiErrorException("HealthcareWorker id in body must be the same as in path or NULL");
+		}
+		// Get a list of keys with NULL values
+		/*
+		List<String> nullKeys = patchBody.entrySet().stream()
+			.filter(entry -> null == entry.getValue())
+			.map(entry -> entry.getKey())
+			.collect(Collectors.toList());
+		if (nullKeys.contains("id")) {
+			nullKeys.remove("id");
+		}
+		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(patchBody);
+		HealthcareWorker domainResponse = healthcareWorkerService.update(domainRequest, nullKeys);
+		*/
 		HealthcareWorker domainResponse = healthcareWorkerService.update(patchBody);
 		HealthcareWorkerDtoModel dtoResponse = healthcareWorkerInMapper.toInfrastructure(domainResponse);
 

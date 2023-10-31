@@ -18,4 +18,6 @@ public interface HealthcareWorkerInMapper {
 
 	HealthcareWorker toDomain(HealthcareWorkerDtoModel healthcareWorkerDto);
 
+	//HealthcareWorker toDomain(Map<String, Object> healthcareWorkerHashMap);
+
 }

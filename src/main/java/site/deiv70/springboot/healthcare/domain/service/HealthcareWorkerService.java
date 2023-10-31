@@ -39,6 +39,11 @@ public class HealthcareWorkerService {
 
 		return healthcareWorkerRepositoryPort.save(healthcareWorkerHashMap);
 	}
+	/*
+	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys) {
+		return healthcareWorkerRepositoryPort.patch(healthcareWorker);
+	}
+	*/
 
 	// D
 	public void delete(UUID id) {
