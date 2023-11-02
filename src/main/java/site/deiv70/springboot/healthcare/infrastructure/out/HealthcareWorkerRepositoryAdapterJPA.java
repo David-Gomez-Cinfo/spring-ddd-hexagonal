@@ -1,23 +1,20 @@
 package site.deiv70.springboot.healthcare.infrastructure.out;
 
-import java.lang.reflect.Field;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
-import org.springframework.util.ReflectionUtils;
 
-import jakarta.persistence.Column;
 import lombok.RequiredArgsConstructor;
 import site.deiv70.springboot.healthcare.domain.model.HealthcareWorker;
 import site.deiv70.springboot.healthcare.domain.port.HealthcareWorkerRepositoryPort;
 import site.deiv70.springboot.healthcare.infrastructure.in.ApiErrorException;
 import site.deiv70.springboot.healthcare.infrastructure.out.mapper.HealthcareWorkerOutMapper;
 import site.deiv70.springboot.healthcare.infrastructure.out.model.HealthcareWorkerEntity;
+import site.deiv70.springboot.healthcare.utils.Utils;
 
 @Repository
 @RequiredArgsConstructor
@@ -53,31 +50,15 @@ public class HealthcareWorkerRepositoryAdapterJPA implements HealthcareWorkerRep
 	}
 
 	@Override
-	public HealthcareWorker save(Map<String, Object> healthcareWorkerHashMap) {
-		HealthcareWorkerEntity entity = healthcareWorkerJpaRepository.findById((UUID) healthcareWorkerHashMap.get("id"))
+	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys) {
+		HealthcareWorkerEntity updatedEntity = healthcareWorkerOutMapper.toInfrastructure(healthcareWorker);
+
+		HealthcareWorkerEntity entity = healthcareWorkerJpaRepository.findById(updatedEntity.getId())
 			.orElseThrow(() -> new ApiErrorException(
-				"HealthcareWorker not found with id: " + healthcareWorkerHashMap.get("id")));
-		healthcareWorkerHashMap.remove("id");
+				"HealthcareWorker not found with id: " + updatedEntity.getId()));
 
-		// Get Fields from Entity
-		List<Field> fields = List.of(HealthcareWorkerEntity.class.getDeclaredFields());
-		// Filter Out Fields without @Column annotation
-		Map<String, Field> fieldColumnHashMap = fields.stream()
-			.filter(field -> field.isAnnotationPresent(Column.class))
-			.collect(java.util.stream.Collectors.toMap(
-				columnName -> columnName.getAnnotation(Column.class).name(),
-				field -> field
-			));
-
-		healthcareWorkerHashMap.forEach((jsonKey, jsonValue) -> {
-			if (null != fieldColumnHashMap.get(jsonKey)) {
-				Field field = fieldColumnHashMap.get(jsonKey);
-				ReflectionUtils.makeAccessible(field);
-				ReflectionUtils.setField(field, entity, jsonValue);
-			} else {
-				throw new ApiErrorException("HealthcareWorker field not found: " + jsonKey);
-			}
-		});
+		healthcareWorkerOutMapper.updateInfrastructure(entity, updatedEntity);
+		Utils.setObjectFromNullFieldList(entity, nullKeys);
 
 		// To save NULLs. Another alternative method is to use saveAndFlush() ?
 		final HealthcareWorkerEntity newEntity = healthcareWorkerOutMapper.toNewInfrastructure(entity);

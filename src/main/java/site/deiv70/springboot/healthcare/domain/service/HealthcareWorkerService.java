@@ -1,6 +1,6 @@
 package site.deiv70.springboot.healthcare.domain.service;
 
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -8,7 +8,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
-
 import site.deiv70.springboot.healthcare.domain.model.HealthcareWorker;
 import site.deiv70.springboot.healthcare.domain.port.HealthcareWorkerRepositoryPort;
 import site.deiv70.springboot.healthcare.infrastructure.in.ApiErrorException;
@@ -35,9 +34,8 @@ public class HealthcareWorkerService {
 	}
 
 	// U
-	public HealthcareWorker update(Map<String, Object> healthcareWorkerHashMap) {
-
-		return healthcareWorkerRepositoryPort.save(healthcareWorkerHashMap);
+	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullFields) {
+		return healthcareWorkerRepositoryPort.update(healthcareWorker, nullFields);
 	}
 	/*
 	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys) {

@@ -1,7 +1,6 @@
 package site.deiv70.springboot.healthcare.domain.port;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -22,7 +21,7 @@ public interface HealthcareWorkerRepositoryPort {
 
 	List<HealthcareWorker> save(List<HealthcareWorker> healthcareWorker);
 
-	HealthcareWorker save(Map<String, Object> healthcareWorkerHashMap);
+	HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys);
 
 	void delete(UUID id);
 

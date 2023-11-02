@@ -1,5 +1,7 @@
 package site.deiv70.springboot.healthcare.infrastructure.in;
 
+import java.lang.reflect.Field;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -20,6 +22,7 @@ import site.deiv70.springboot.healthcare.domain.port.HealthcareWorkerRepositoryP
 import site.deiv70.springboot.healthcare.domain.service.HealthcareWorkerService;
 import site.deiv70.springboot.healthcare.infrastructure.in.mapper.HealthcareWorkerInMapper;
 import site.deiv70.springboot.healthcare.infrastructure.in.model.HealthcareWorkerDtoModel;
+import site.deiv70.springboot.healthcare.utils.Utils;
 
 @RestController
 @RequestMapping("${server.servlet.api-path}")
@@ -101,19 +104,15 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 		if (!id.equals(patchBody.get("id"))) {
 			throw new ApiErrorException("HealthcareWorker id in body must be the same as in path or NULL");
 		}
-		// Get a list of keys with NULL values
-		/*
-		List<String> nullKeys = patchBody.entrySet().stream()
-			.filter(entry -> null == entry.getValue())
-			.map(entry -> entry.getKey())
-			.collect(Collectors.toList());
-		if (nullKeys.contains("id")) {
-			nullKeys.remove("id");
-		}
-		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(patchBody);
-		HealthcareWorker domainResponse = healthcareWorkerService.update(domainRequest, nullKeys);
-		*/
-		HealthcareWorker domainResponse = healthcareWorkerService.update(patchBody);
+
+		Map<Field, Object> dtoFieldValueHashMap = Utils.getDTOClassFieldValueHashMap(patchBody, HealthcareWorkerDtoModel.class);
+		HealthcareWorkerDtoModel healthcareWorkerDtoModelEmpty = new HealthcareWorkerDtoModel();
+		final HealthcareWorkerDtoModel healthcareWorkerDtoModel = Utils.setDTOObjectFromHashMap(
+			dtoFieldValueHashMap, healthcareWorkerDtoModelEmpty);
+		final List<String> nullFieldList = Utils.getNullFieldList(dtoFieldValueHashMap);
+
+		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(healthcareWorkerDtoModel);
+		HealthcareWorker domainResponse = healthcareWorkerService.update(domainRequest, nullFieldList);
 		HealthcareWorkerDtoModel dtoResponse = healthcareWorkerInMapper.toInfrastructure(domainResponse);
 
 		return new ResponseEntity<>(dtoResponse, HttpStatus.OK);
