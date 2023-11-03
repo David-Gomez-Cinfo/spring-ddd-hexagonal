@@ -2,8 +2,10 @@ package site.deiv70.springboot.healthcare.infrastructure.out.mapper;
 
 import java.util.List;
 
+import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingTarget;
+import org.mapstruct.NullValuePropertyMappingStrategy;
 import org.springframework.data.domain.Page;
 
 import site.deiv70.springboot.healthcare.domain.model.HealthcareWorker;
@@ -31,7 +33,9 @@ public interface HealthcareWorkerOutMapper {
 		return entityPage.map(this::toDomain);
 	}
 
-	void updateInfrastructure(HealthcareWorkerEntity healthcareWorkerEntity,
-			@MappingTarget HealthcareWorkerEntity healthcareWorkerEntityUpdated);
+	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+	void updateInfrastructure(@MappingTarget HealthcareWorkerEntity healthcareWorkerEntity,
+		HealthcareWorkerEntity healthcareWorkerEntityUpdated);
+
 
 }
