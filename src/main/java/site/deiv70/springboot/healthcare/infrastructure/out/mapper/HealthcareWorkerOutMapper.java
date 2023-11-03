@@ -15,6 +15,8 @@ import site.deiv70.springboot.healthcare.utils.ValueObjectMapper;
 @Mapper(componentModel = "spring", uses = {ValueObjectMapper.class})
 public interface HealthcareWorkerOutMapper {
 
+	//HealthcareWorkerOutMapper INSTANCE = Mappers.getMapper(HealthcareWorkerOutMapper.class);
+
 	HealthcareWorkerEntity toNewInfrastructure(HealthcareWorkerEntity healthcareWorkerEntity);
 
 	HealthcareWorkerEntity toInfrastructure(HealthcareWorker healthcareWorker);
@@ -36,6 +38,5 @@ public interface HealthcareWorkerOutMapper {
 	@BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
 	void updateInfrastructure(@MappingTarget HealthcareWorkerEntity healthcareWorkerEntity,
 		HealthcareWorkerEntity healthcareWorkerEntityUpdated);
-
 
 }

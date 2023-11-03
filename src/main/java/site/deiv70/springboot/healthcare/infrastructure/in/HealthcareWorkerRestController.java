@@ -1,7 +1,5 @@
 package site.deiv70.springboot.healthcare.infrastructure.in;
 
-import java.lang.reflect.Field;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -21,8 +19,8 @@ import site.deiv70.springboot.healthcare.domain.model.HealthcareWorker;
 import site.deiv70.springboot.healthcare.domain.port.HealthcareWorkerRepositoryPort;
 import site.deiv70.springboot.healthcare.domain.service.HealthcareWorkerService;
 import site.deiv70.springboot.healthcare.infrastructure.in.mapper.HealthcareWorkerInMapper;
+import site.deiv70.springboot.healthcare.infrastructure.in.mapper.HealthcareWorkerPatchMapper;
 import site.deiv70.springboot.healthcare.infrastructure.in.model.HealthcareWorkerDtoModel;
-import site.deiv70.springboot.healthcare.utils.Utils;
 
 @RestController
 @RequestMapping("${server.servlet.api-path}")
@@ -30,6 +28,7 @@ import site.deiv70.springboot.healthcare.utils.Utils;
 public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */ {
 
 	final HealthcareWorkerInMapper healthcareWorkerInMapper;
+	final HealthcareWorkerPatchMapper healthcareWorkerPatchMapper;
 	final HealthcareWorkerService healthcareWorkerService;
 	final HealthcareWorkerRepositoryPort healthcareWorkerRepositoryPort;
 
@@ -98,21 +97,17 @@ public class HealthcareWorkerRestController /* implements HealthcareWorkerApi */
 		@PathVariable("id")
 		UUID id,
 		@RequestBody
-		Map<String, Object> patchBody
+		Map<String, String> patchBody
 	) {
-		patchBody.putIfAbsent("id", id);
-		if (!id.equals(patchBody.get("id"))) {
+		patchBody.putIfAbsent("id", String.valueOf(id));
+		if (!id.equals(UUID.fromString(patchBody.get("id")))) {
 			throw new ApiErrorException("HealthcareWorker id in body must be the same as in path or NULL");
 		}
 
-		Map<Field, Object> dtoFieldValueHashMap = Utils.getDTOClassFieldValueHashMap(patchBody, HealthcareWorkerDtoModel.class);
-		HealthcareWorkerDtoModel healthcareWorkerDtoModelEmpty = new HealthcareWorkerDtoModel();
-		final HealthcareWorkerDtoModel healthcareWorkerDtoModel = Utils.setDTOObjectFromHashMap(
-			dtoFieldValueHashMap, healthcareWorkerDtoModelEmpty);
-		final List<String> nullFieldList = Utils.getNullFieldList(dtoFieldValueHashMap);
+		final HealthcareWorkerDtoPatchObject patchObject = healthcareWorkerPatchMapper.toDtoPatchObject(patchBody);
 
-		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(healthcareWorkerDtoModel);
-		HealthcareWorker domainResponse = healthcareWorkerService.update(domainRequest, nullFieldList);
+		HealthcareWorker domainRequest = healthcareWorkerInMapper.toDomain(patchObject.getDto());
+		HealthcareWorker domainResponse = healthcareWorkerService.modify(domainRequest, patchObject.getNullKeys());
 		HealthcareWorkerDtoModel dtoResponse = healthcareWorkerInMapper.toInfrastructure(domainResponse);
 
 		return new ResponseEntity<>(dtoResponse, HttpStatus.OK);

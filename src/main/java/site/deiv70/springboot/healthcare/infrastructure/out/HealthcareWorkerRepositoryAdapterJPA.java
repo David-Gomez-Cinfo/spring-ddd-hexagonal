@@ -1,6 +1,7 @@
 package site.deiv70.springboot.healthcare.infrastructure.out;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -50,7 +51,7 @@ public class HealthcareWorkerRepositoryAdapterJPA implements HealthcareWorkerRep
 	}
 
 	@Override
-	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys) {
+	public HealthcareWorker modify(HealthcareWorker healthcareWorker, Map<String, String> nullKeys) {
 		HealthcareWorkerEntity updatedEntity = healthcareWorkerOutMapper.toInfrastructure(healthcareWorker);
 
 		HealthcareWorkerEntity entity = healthcareWorkerJpaRepository.findById(updatedEntity.getId())
@@ -58,7 +59,7 @@ public class HealthcareWorkerRepositoryAdapterJPA implements HealthcareWorkerRep
 				"HealthcareWorker not found with id: " + updatedEntity.getId()));
 
 		healthcareWorkerOutMapper.updateInfrastructure(entity, updatedEntity);
-		Utils.setObjectFromNullFieldList(entity, nullKeys);
+		Utils.setObjectFromNullFieldHashMap(entity, nullKeys);
 
 		// To save NULLs. Another alternative method is to use saveAndFlush() ?
 		final HealthcareWorkerEntity newEntity = healthcareWorkerOutMapper.toNewInfrastructure(entity);

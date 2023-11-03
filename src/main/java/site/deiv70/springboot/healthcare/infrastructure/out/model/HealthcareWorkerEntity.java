@@ -26,11 +26,15 @@ public class HealthcareWorkerEntity implements Serializable {
 
 	@Id
 	private UUID id;
+	@Column(name = "tax_identification_number")
+	private String taxIdentificationNumber;
+	@Column(name = "personal_identification_code")
+	private Long personalIdentificationCode;
 	@Column(name = "name")
 	private String name;
 	@Column(name = "surname")
 	private String surname;
-	@Column(name = "tax_identification_number")
-	private String taxIdentificationNumber;
+	@Column(name = "age")
+	private Integer age;
 
 }

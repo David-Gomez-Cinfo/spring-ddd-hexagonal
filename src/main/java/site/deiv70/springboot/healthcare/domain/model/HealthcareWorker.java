@@ -23,9 +23,11 @@ public class HealthcareWorker implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private final HealthcareWorker.ID id;
+	private HealthcareWorkerTaxIdentificationNumberVO taxIdentificationNumber;
+	private Long personalIdentificationCode;
 	private String name;
 	private String surname;
-	private HealthcareWorkerTaxIdentificationNumberVO taxIdentificationNumber;
+	private Integer age;
 
 	@Value
 	public static class ID implements ValueObject<UUID>, Serializable {

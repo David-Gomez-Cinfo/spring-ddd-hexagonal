@@ -16,6 +16,19 @@ import site.deiv70.springboot.healthcare.infrastructure.in.ApiErrorException;
 @UtilityClass
 public final class Utils {
 
+	public static String convertCamelCaseToSnakeCase(String camelCase) {
+		return camelCase.replaceAll("([A-Z])", "_$1").toLowerCase();
+	}
+
+	public static String convertSnakeCaseToCamelCase(String snakeCase) {
+		String[] words = snakeCase.split("_");
+		StringBuilder camelCase = new StringBuilder();
+		for (String word : words) {
+			camelCase.append(word.substring(0, 1).toUpperCase()).append(word.substring(1));
+		}
+		return camelCase.toString();
+	}
+
 	/**
 	 * Method for setting a Class (DTO) fields from a HashMap
 	 * @param fieldValueHashMap HashMap with Class Field as KEY and Request Body Value as VALUE
@@ -58,12 +71,12 @@ public final class Utils {
 		Map<String, Field> jsonPropertyHashMap = new HashMap<>();
 		for (Field field : clazz.getDeclaredFields()) {
 			String jsonPropertyValue = "";
-			if (field.isAnnotationPresent(JsonProperty.class)) {
+			if (field.isAnnotationPresent(JsonProperty.class) && null != field.getAnnotation(JsonProperty.class).value()) {
 				// Get the Value of JsonProperty annotation if present
 				jsonPropertyValue = field.getAnnotation(JsonProperty.class).value();
 			} else {
 				// Or convert field name to snake_case if missing
-				jsonPropertyValue = field.getName().replaceAll("([A-Z])", "_$1").toLowerCase();
+				jsonPropertyValue = convertCamelCaseToSnakeCase(field.getName());
 			}
 			// Create the HashMap with JsonProperty Value as KEY and corresponding Field as VALUE
 			jsonPropertyHashMap.put(jsonPropertyValue, field);
@@ -125,6 +138,19 @@ public final class Utils {
 		return object;
 	}
 
+	public static <T> T setObjectFromNullFieldHashMap(T object, Map<String, String> nullFields) {
+		nullFields.forEach((nullField, nullValue) -> {
+			Field field = ReflectionUtils.findField(object.getClass(), nullField);
+			if (null != field) {
+				ReflectionUtils.makeAccessible(field);
+				ReflectionUtils.setField(field, object, null);
+			} else {
+				throw new ApiErrorException("Field not found: " + nullField);
+			}
+		});
+		return object;
+	}
+
 	/**
 	 * Method for mapping a List of Null Fields with a HashMap
 	 * @param nullFieldList List of Null Fields to map
@@ -137,5 +163,7 @@ public final class Utils {
 		nullFieldList.forEach(nullField -> mappedList.add(map.getOrDefault(nullField, nullField)));
 		return mappedList;
 	}
+
+
 
 }

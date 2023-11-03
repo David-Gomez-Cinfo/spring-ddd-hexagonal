@@ -1,6 +1,6 @@
 package site.deiv70.springboot.healthcare.domain.service;
 
-import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -34,8 +34,8 @@ public class HealthcareWorkerService {
 	}
 
 	// U
-	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullFields) {
-		return healthcareWorkerRepositoryPort.update(healthcareWorker, nullFields);
+	public HealthcareWorker modify(HealthcareWorker healthcareWorker, Map<String, String> nullFields) {
+		return healthcareWorkerRepositoryPort.modify(healthcareWorker, nullFields);
 	}
 	/*
 	public HealthcareWorker update(HealthcareWorker healthcareWorker, List<String> nullKeys) {
